@@ -224,7 +224,7 @@ async def quantum_computing_agent(
         print(error_details)
         print("=" * 80)
         
-        yield AgentMessage(text=error_msg + error_details)
+        yield AgentMessage(text=error_msg)
 
 def run():
     """Starts the Quantum Computing Agent server"""

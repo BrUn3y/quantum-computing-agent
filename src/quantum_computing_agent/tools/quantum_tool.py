@@ -194,7 +194,8 @@ qc.measure_all()
                 final_states = ['DONE', 'COMPLETED', 'CANCELLED', 'ERROR']
                 
                 while True:
-                    status = job.status()
+                    raw_status = job.status()
+                    status = str(raw_status) if not hasattr(raw_status, 'name') else raw_status.name
                     elapsed = time.time() - start_time
                     
                     # Check timeout

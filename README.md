@@ -88,7 +88,7 @@ This agent is the **circuit execution specialist** of the multi-agent system:
 - ❌ Only executes, does not query or generate
 
 **Communication:**
-- Receives requests via A2A from Operations Agent (port 8000)
+- Receives requests via A2A from Quantum Lab Agent (port 8000)
 - Responds with Job ID, backend used, and execution details
 - Can be invoked directly on port 8003
 
@@ -168,15 +168,24 @@ curl http://localhost:8003/.well-known/agent-card.json
 ### Example 1: Execute Bell State on Simulator
 
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this QASM code on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "11111111-1111-1111-1111-111111111111",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this QASM code on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
+
+The final agent response is the last message in `result.history` with `role: "agent"`.
 
 **Response includes:**
 - Job ID for tracking
@@ -187,13 +196,20 @@ curl -X POST http://localhost:8003 \
 ### Example 2: Execute on Real Quantum Hardware
 
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "22222222-2222-2222-2222-222222222222",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
 
@@ -206,13 +222,20 @@ curl -X POST http://localhost:8003 \
 ### Example 3: Execute Qiskit Python Code
 
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "33333333-3333-3333-3333-333333333333",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"}]
+      }
+    }
   }'
 ```
 
@@ -271,6 +294,7 @@ This agent is designed to work as part of the Quantum Lab Agent System:
 While designed for A2A communication, the agent can also be used standalone:
 
 ```python
+import uuid
 import requests
 
 qasm_code = """
@@ -284,16 +308,25 @@ measure q -> c;
 """
 
 response = requests.post(
-    "http://localhost:8003",
+    "http://localhost:8003/jsonrpc/",
     json={
-        "messages": [{
-            "role": "user",
-            "content": f"Execute this circuit: {qasm_code}"
-        }]
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "message/send",
+        "params": {
+            "message": {
+                "kind": "message",
+                "messageId": str(uuid.uuid4()),
+                "role": "user",
+                "parts": [{"kind": "text", "text": f"Execute this circuit: {qasm_code}"}]
+            }
+        }
     }
 )
 
-print(response.json())
+result = response.json()["result"]
+final_message = result["history"][-1]
+print(final_message["parts"][0]["text"])
 ```
 
 ## 📊 Job Tracking
@@ -303,13 +336,20 @@ After execution, use the Job ID to check results:
 ```bash
 # The Job ID is returned in the response
 # Use the Status Agent (port 8002) to check results:
-curl -X POST http://localhost:8002 \
+curl -X POST http://localhost:8002/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "What is the status of job abc123xyz?"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "44444444-4444-4444-4444-444444444444",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "What is the status of job abc123xyz?"}]
+      }
+    }
   }'
 ```
 
@@ -359,7 +399,7 @@ This agent is part of the Quantum Computing Multi-Agent System. Here are the rel
 - **[Quantum Computing Agent](https://github.ibm.com/Edgar-Castaneda/quantum-computing-agent)** - Circuit execution specialist (this repository)
 - **[Quantum Status Agent](https://github.ibm.com/Edgar-Castaneda/quantum-status-agent)** - Status monitoring and job tracking
 - **[Quantum Developer Agent](https://github.ibm.com/Edgar-Castaneda/quantum-developer-agent)** - Code generation and algorithm implementation
-- **[Quantum Operations Agent](https://github.ibm.com/Edgar-Castaneda/quantum-lab-agent)** - Main orchestrator coordinating all agents
+- **[Quantum Lab Agent](https://github.ibm.com/Edgar-Castaneda/quantum-lab-agent)** - Main orchestrator coordinating all agents
 
 ## 📚 Additional Resources
 

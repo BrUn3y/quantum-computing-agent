@@ -11,6 +11,8 @@ dependencies = [
     "qiskit>=1.0.0",
     "qiskit-ibm-runtime>=0.20.0",
     "python-dotenv>=1.0.0",
+    "mcp>=1.12.3,<2.0.0",
+    "uvicorn<0.36.0",
 ]
 
 [tool.ruff]
