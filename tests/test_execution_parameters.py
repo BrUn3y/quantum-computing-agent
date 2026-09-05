@@ -31,6 +31,13 @@ class ExecutionParameterTests(unittest.TestCase):
         self.assertEqual(parameters["shots"], 256)
         self.assertEqual(parameters["job_tags"], ["quantum-lab", "cx-gate"])
 
+    def test_least_busy_real_ibm_quantum_backend_is_hardware(self):
+        parameters = _execution_parameters(
+            "Create a Bell state and execute it once on the least busy real IBM Quantum backend"
+        )
+        self.assertTrue(parameters["use_real_device"])
+        self.assertEqual(parameters["backend_name"], "")
+
 
 class LocalSimulationTests(unittest.IsolatedAsyncioTestCase):
     async def test_results_and_tags(self):

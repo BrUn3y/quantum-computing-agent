@@ -13,7 +13,7 @@ The Quantum Computing Agent executes quantum circuits (QASM and Qiskit code) on 
 - ⚛️ **Real Hardware**: Execute on actual quantum computers
 - 🔄 **Auto Transpilation**: Automatic circuit optimization for target backend
 - 📊 **Job Tracking**: Returns Job IDs for asynchronous result retrieval
-- 📈 **Execution Canvas**: Shows completed outcome frequencies, percentages, shots, backend, and circuit diagram in a high-resolution dashboard
+- 📈 **Execution Canvas**: Shows completed outcomes, readable multi-row circuits, QASM, and the local query time in a high-resolution dashboard
 
 ## 🏗️ Architecture
 
