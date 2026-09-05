@@ -32,8 +32,9 @@ QISKIT_IBM_TOKEN=your_ibm_quantum_token_here
 WATSONX_API_KEY=your_api_key_here
 WATSONX_PROJECT_ID=your_project_id_here
 
-# Agent Configuration (Optional - defaults shown)
-WATSONX_COMPUTING_MODEL=mistralai/mistral-small-3-1-24b-instruct-2503
+# Local Granite model
+OLLAMA_API_BASE=http://127.0.0.1:11434
+COMPUTING_MODEL=ollama:granite4:small-h
 COMPUTING_HOST=127.0.0.1
 COMPUTING_PORT=8003
 ```
@@ -161,7 +162,7 @@ uv sync --reinstall
 ### Watsonx API Errors
 - Verify your API key is correct
 - Check project ID matches your Watsonx project
-- Ensure you have access to Mistral Small model
+- For local inference, run `ollama pull granite4:small-h`
 - Check Watsonx service status
 
 ### Circuit Execution Errors
