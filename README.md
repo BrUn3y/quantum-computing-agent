@@ -360,7 +360,7 @@ This agent is part of the Quantum Computing Multi-Agent System. Here are the rel
 - **[Quantum Computing Agent](https://github.com/BrUn3y/quantum-computing-agent)** - Circuit execution specialist (this repository)
 - **[Quantum Status Agent](https://github.com/BrUn3y/quantum-status-agent)** - Status monitoring and job tracking
 - **[Quantum Developer Agent](https://github.com/BrUn3y/quantum-developer-agent)** - Code generation and algorithm implementation
-- **[Quantum Operations Agent](https://github.com/BrUn3y/quantum-lab-agent)** - Main orchestrator coordinating all agents
+- **[Quantum Lab Agent System](https://github.com/BrUn3y/quantum_lab_agent)** - Main orchestrator coordinating all agents
 
 ## 📚 Additional Resources
 
