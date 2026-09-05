@@ -13,6 +13,7 @@ The Quantum Computing Agent executes quantum circuits (QASM and Qiskit code) on 
 - ⚛️ **Real Hardware**: Execute on actual quantum computers
 - 🔄 **Auto Transpilation**: Automatic circuit optimization for target backend
 - 📊 **Job Tracking**: Returns Job IDs for asynchronous result retrieval
+- 📈 **Execution Canvas**: Shows completed outcome frequencies, percentages, shots, backend, and circuit diagram in a high-resolution dashboard
 
 ## 🏗️ Architecture
 
@@ -40,6 +41,7 @@ dependencies = [
     "beeai_framework>=0.1.76",        # BeeAI Framework for agents
     "qiskit>=1.0.0",                  # IBM Quantum SDK
     "qiskit-ibm-runtime>=0.20.0",    # IBM Quantum Runtime
+    "matplotlib>=3.7.0",             # Execution result dashboards
     "python-dotenv>=1.0.0",           # Environment variable management
 ]
 ```
