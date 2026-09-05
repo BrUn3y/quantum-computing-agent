@@ -16,17 +16,17 @@ The Quantum Computing Agent executes quantum circuits (QASM and Qiskit code) on 
 
 ## 🏗️ Architecture
 
-- **Model**: Mistral Small 3.1 (Watsonx)
+- **Model**: Granite 4.2 8B via Ollama (`ollama:granite4.2:8b`)
 - **Port**: 8003
 - **Type**: AgentStack Server with A2A protocol
 - **Tools**: IBMQuantumTool (circuit executor)
-- **Framework**: BeeAI + Watsonx + Qiskit + A2A
+- **Framework**: BeeAI + Granite/Ollama + Qiskit + A2A
 
 ## 📋 Prerequisites
 
 - Python 3.11+
 - IBM Quantum account ([Get one here](https://quantum.cloud.ibm.com/))
-- IBM Watsonx account with API key
+- Ollama with `granite4.2:8b` (Watsonx remains an optional fallback)
 
 ## 📦 Project Dependencies
 
@@ -88,7 +88,7 @@ This agent is the **circuit execution specialist** of the multi-agent system:
 - ❌ Only executes, does not query or generate
 
 **Communication:**
-- Receives requests via A2A from Quantum Lab Agent (port 8000)
+- Receives requests via A2A from Operations Agent (port 8000)
 - Responds with Job ID, backend used, and execution details
 - Can be invoked directly on port 8003
 
@@ -134,7 +134,8 @@ WATSONX_PROJECT_ID=your_project_id_here
 WATSONX_API_URL=https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29
 
 # Computing Agent Configuration
-WATSONX_COMPUTING_MODEL=mistralai/mistral-small-3-1-24b-instruct-2503
+OLLAMA_API_BASE=http://127.0.0.1:11434
+COMPUTING_MODEL=ollama:granite4.2:8b
 COMPUTING_HOST=127.0.0.1
 COMPUTING_PORT=8003
 ```
@@ -168,24 +169,15 @@ curl http://localhost:8003/.well-known/agent-card.json
 ### Example 1: Execute Bell State on Simulator
 
 ```bash
-curl -X POST http://localhost:8003/jsonrpc/ \
+curl -X POST http://localhost:8003 \
   -H "Content-Type: application/json" \
   -d '{
-    "jsonrpc": "2.0",
-    "id": "1",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "kind": "message",
-        "messageId": "11111111-1111-1111-1111-111111111111",
-        "role": "user",
-        "parts": [{"kind": "text", "text": "Execute this QASM code on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"}]
-      }
-    }
+    "messages": [{
+      "role": "user",
+      "content": "Execute this QASM code on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"
+    }]
   }'
 ```
-
-The final agent response is the last message in `result.history` with `role: "agent"`.
 
 **Response includes:**
 - Job ID for tracking
@@ -196,20 +188,13 @@ The final agent response is the last message in `result.history` with `role: "ag
 ### Example 2: Execute on Real Quantum Hardware
 
 ```bash
-curl -X POST http://localhost:8003/jsonrpc/ \
+curl -X POST http://localhost:8003 \
   -H "Content-Type: application/json" \
   -d '{
-    "jsonrpc": "2.0",
-    "id": "1",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "kind": "message",
-        "messageId": "22222222-2222-2222-2222-222222222222",
-        "role": "user",
-        "parts": [{"kind": "text", "text": "Execute this circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"}]
-      }
-    }
+    "messages": [{
+      "role": "user",
+      "content": "Execute this circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"
+    }]
   }'
 ```
 
@@ -222,20 +207,13 @@ curl -X POST http://localhost:8003/jsonrpc/ \
 ### Example 3: Execute Qiskit Python Code
 
 ```bash
-curl -X POST http://localhost:8003/jsonrpc/ \
+curl -X POST http://localhost:8003 \
   -H "Content-Type: application/json" \
   -d '{
-    "jsonrpc": "2.0",
-    "id": "1",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "kind": "message",
-        "messageId": "33333333-3333-3333-3333-333333333333",
-        "role": "user",
-        "parts": [{"kind": "text", "text": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"}]
-      }
-    }
+    "messages": [{
+      "role": "user",
+      "content": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"
+    }]
   }'
 ```
 
@@ -294,7 +272,6 @@ This agent is designed to work as part of the Quantum Lab Agent System:
 While designed for A2A communication, the agent can also be used standalone:
 
 ```python
-import uuid
 import requests
 
 qasm_code = """
@@ -308,25 +285,16 @@ measure q -> c;
 """
 
 response = requests.post(
-    "http://localhost:8003/jsonrpc/",
+    "http://localhost:8003",
     json={
-        "jsonrpc": "2.0",
-        "id": "1",
-        "method": "message/send",
-        "params": {
-            "message": {
-                "kind": "message",
-                "messageId": str(uuid.uuid4()),
-                "role": "user",
-                "parts": [{"kind": "text", "text": f"Execute this circuit: {qasm_code}"}]
-            }
-        }
+        "messages": [{
+            "role": "user",
+            "content": f"Execute this circuit: {qasm_code}"
+        }]
     }
 )
 
-result = response.json()["result"]
-final_message = result["history"][-1]
-print(final_message["parts"][0]["text"])
+print(response.json())
 ```
 
 ## 📊 Job Tracking
@@ -336,20 +304,13 @@ After execution, use the Job ID to check results:
 ```bash
 # The Job ID is returned in the response
 # Use the Status Agent (port 8002) to check results:
-curl -X POST http://localhost:8002/jsonrpc/ \
+curl -X POST http://localhost:8002 \
   -H "Content-Type: application/json" \
   -d '{
-    "jsonrpc": "2.0",
-    "id": "1",
-    "method": "message/send",
-    "params": {
-      "message": {
-        "kind": "message",
-        "messageId": "44444444-4444-4444-4444-444444444444",
-        "role": "user",
-        "parts": [{"kind": "text", "text": "What is the status of job abc123xyz?"}]
-      }
-    }
+    "messages": [{
+      "role": "user",
+      "content": "What is the status of job abc123xyz?"
+    }]
   }'
 ```
 
@@ -396,10 +357,10 @@ uv sync --reinstall
 
 This agent is part of the Quantum Computing Multi-Agent System. Here are the related repositories:
 
-- **[Quantum Computing Agent](https://github.ibm.com/Edgar-Castaneda/quantum-computing-agent)** - Circuit execution specialist (this repository)
-- **[Quantum Status Agent](https://github.ibm.com/Edgar-Castaneda/quantum-status-agent)** - Status monitoring and job tracking
-- **[Quantum Developer Agent](https://github.ibm.com/Edgar-Castaneda/quantum-developer-agent)** - Code generation and algorithm implementation
-- **[Quantum Lab Agent](https://github.ibm.com/Edgar-Castaneda/quantum-lab-agent)** - Main orchestrator coordinating all agents
+- **[Quantum Computing Agent](https://github.com/BrUn3y/quantum-computing-agent)** - Circuit execution specialist (this repository)
+- **[Quantum Status Agent](https://github.com/BrUn3y/quantum-status-agent)** - Status monitoring and job tracking
+- **[Quantum Developer Agent](https://github.com/BrUn3y/quantum-developer-agent)** - Code generation and algorithm implementation
+- **[Quantum Operations Agent](https://github.com/BrUn3y/quantum-lab-agent)** - Main orchestrator coordinating all agents
 
 ## 📚 Additional Resources
 
@@ -421,7 +382,7 @@ Apache 2.0 License
 - Built with [BeeAI Framework](https://github.com/i-am-bee/beeai-framework)
 - Powered by [IBM Watsonx](https://www.ibm.com/products/watsonx-ai)
 - Quantum computing via [IBM Quantum](https://quantum.ibm.com/)
-- LLM: Mistral Small 3.1
+- LLM: Granite 4.2 8B via Ollama
 
 ---
 
