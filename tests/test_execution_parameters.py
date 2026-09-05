@@ -1,0 +1,52 @@
+import unittest
+
+from quantum_computing_agent.agent import _execution_parameters
+from quantum_computing_agent.tools.quantum_tool import IBMQuantumTool
+
+
+BELL_QASM = """OPENQASM 2.0;
+include "qelib1.inc";
+qreg q[2];
+creg c[2];
+h q[0];
+cx q[0],q[1];
+measure q -> c;
+"""
+
+
+class ExecutionParameterTests(unittest.TestCase):
+    def test_internal_policy_does_not_force_hardware(self):
+        request = (
+            "Create a Bell state on the simulator\n\n"
+            "Execute exactly once. If the user requested real hardware, select a real backend."
+        )
+        parameters = _execution_parameters(request)
+        self.assertFalse(parameters["use_real_device"])
+        self.assertEqual(parameters["job_tags"], ["quantum-lab", "bell-state"])
+
+    def test_named_backend_and_shots(self):
+        parameters = _execution_parameters("Run a CX circuit on ibm_fez with 256 shots")
+        self.assertTrue(parameters["use_real_device"])
+        self.assertEqual(parameters["backend_name"], "ibm_fez")
+        self.assertEqual(parameters["shots"], 256)
+        self.assertEqual(parameters["job_tags"], ["quantum-lab", "cx-gate"])
+
+
+class LocalSimulationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_results_and_tags(self):
+        output = await IBMQuantumTool().run(
+            {
+                "qasm_code": BELL_QASM,
+                "backend_name": "simulator",
+                "shots": 128,
+                "job_tags": ["quantum-lab", "bell-state"],
+            }
+        )
+        response = output.get_text_content()
+        self.assertIn("local_statevector_simulator", response)
+        self.assertIn("Local simulation completed", response)
+        self.assertIn("`quantum-lab`, `bell-state`", response)
+
+
+if __name__ == "__main__":
+    unittest.main()
