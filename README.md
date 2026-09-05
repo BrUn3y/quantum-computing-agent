@@ -16,17 +16,17 @@ The Quantum Computing Agent executes quantum circuits (QASM and Qiskit code) on 
 
 ## 🏗️ Architecture
 
-- **Model**: Mistral Small 3.1 (Watsonx)
+- **Model**: Granite 4 Small H via Ollama (`ollama:granite4:small-h`)
 - **Port**: 8003
 - **Type**: AgentStack Server with A2A protocol
 - **Tools**: IBMQuantumTool (circuit executor)
-- **Framework**: BeeAI + Watsonx + Qiskit + A2A
+- **Framework**: BeeAI + Granite/Ollama + Qiskit + A2A
 
 ## 📋 Prerequisites
 
 - Python 3.11+
 - IBM Quantum account ([Get one here](https://quantum.cloud.ibm.com/))
-- IBM Watsonx account with API key
+- Ollama with `granite4:small-h` (Watsonx remains an optional fallback)
 
 ## 📦 Project Dependencies
 
@@ -134,7 +134,8 @@ WATSONX_PROJECT_ID=your_project_id_here
 WATSONX_API_URL=https://us-south.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29
 
 # Computing Agent Configuration
-WATSONX_COMPUTING_MODEL=mistralai/mistral-small-3-1-24b-instruct-2503
+OLLAMA_API_BASE=http://127.0.0.1:11434
+COMPUTING_MODEL=ollama:granite4:small-h
 COMPUTING_HOST=127.0.0.1
 COMPUTING_PORT=8003
 ```
@@ -381,7 +382,7 @@ Apache 2.0 License
 - Built with [BeeAI Framework](https://github.com/i-am-bee/beeai-framework)
 - Powered by [IBM Watsonx](https://www.ibm.com/products/watsonx-ai)
 - Quantum computing via [IBM Quantum](https://quantum.ibm.com/)
-- LLM: Mistral Small 3.1
+- LLM: Granite 4 Small H via Ollama
 
 ---
 
