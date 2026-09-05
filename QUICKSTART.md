@@ -64,13 +64,20 @@ python -m quantum_computing_agent.agent
 curl http://localhost:8003/.well-known/agent-card.json
 
 # Test with a simple circuit
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this QASM code:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "7dc531b3-233a-489f-a4a4-1f42a53ef42c",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this QASM code:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
 
@@ -91,49 +98,77 @@ docker run -d -p 8003:8003 --env-file .env --name quantum-computing quantum-comp
 
 ### Execute Bell State on Simulator
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this Bell state circuit on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "d62730b7-c0b7-4dae-9323-ed12f2e56b3c",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this Bell state circuit on ibm_kyiv:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
 
 ### Execute on Real Quantum Hardware
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this superposition circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "1f9089ce-9ead-4e93-86c7-edd30237ad5f",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this superposition circuit on ibm_brisbane (real hardware):\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[3];\ncreg c[3];\nh q[0];\nh q[1];\nh q[2];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
 
 ### Execute Qiskit Python Code
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "599dc9d0-dc5d-4266-a0ee-e008c1b075bb",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this Qiskit code:\nfrom qiskit import QuantumCircuit\nqc = QuantumCircuit(2, 2)\nqc.h(0)\nqc.cx(0, 1)\nqc.measure_all()"}]
+      }
+    }
   }'
 ```
 
 ### Execute with Specific Backend
 ```bash
-curl -X POST http://localhost:8003 \
+curl -X POST http://localhost:8003/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "Execute this circuit on ibm_osaka:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "7d0b7669-e30e-4b4e-9a71-9f5e822526a7",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "Execute this circuit on ibm_osaka:\nOPENQASM 2.0;\ninclude \"qelib1.inc\";\nqreg q[2];\ncreg c[2];\nh q[0];\ncx q[0],q[1];\nmeasure q -> c;"}]
+      }
+    }
   }'
 ```
 
@@ -198,13 +233,20 @@ This agent can work:
 After execution, the agent returns a Job ID. Use the Status Agent (port 8002) to check results:
 
 ```bash
-curl -X POST http://localhost:8002 \
+curl -X POST http://localhost:8002/jsonrpc/ \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{
-      "role": "user",
-      "content": "What is the status of job YOUR_JOB_ID?"
-    }]
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "message/send",
+    "params": {
+      "message": {
+        "kind": "message",
+        "messageId": "81d59919-f709-4497-9d47-9a1ad7409e9c",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "What is the status of job YOUR_JOB_ID?"}]
+      }
+    }
   }'
 ```
 
