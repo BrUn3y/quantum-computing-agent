@@ -58,6 +58,10 @@ class ExecutionParameterTests(unittest.TestCase):
         parameters = _execution_parameters("Run Grover without a simulator")
         self.assertTrue(parameters["use_real_device"])
 
+    def test_qaoa_maxcut_job_tag(self):
+        parameters = _execution_parameters("Execute this optimized QAOA Max-Cut circuit")
+        self.assertEqual(parameters["job_tags"], ["quantum-lab", "qaoa-maxcut"])
+
 
 class LocalSimulationTests(unittest.IsolatedAsyncioTestCase):
     async def test_results_and_tags(self):
